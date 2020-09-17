@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <UseWPF>true</UseWPF>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.7.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="config.json" />
+      <Content Include="config.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FolderClean.Application\FolderClean.Application.csproj" />
+    </ItemGroup>
+
+</Project>

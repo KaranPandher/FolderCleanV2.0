@@ -1,0 +1,67 @@
+﻿<Window x:Class="FolderClean.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModel="clr-namespace:FolderClean.Wpf.ViewModel"
+        xmlns:viewAction="clr-namespace:FolderClean.Wpf.ViewAction"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Title="Service Config" Height="200" Width="400">
+    <Window.Resources>
+        <viewModel:MainViewModel x:Key="MainViewModel" />
+    </Window.Resources>
+    <Window.DataContext>
+        <Binding Source="{StaticResource MainViewModel}" />
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Border Padding="5" BorderThickness="1">
+            <StackPanel>
+                <Label>Source Folder</Label>
+                <TextBox Text="{Binding Path=SourceFolder}" />
+            </StackPanel>
+        </Border>
+        <Border Grid.Row="1" Padding="5" BorderThickness="1">
+            <StackPanel>
+                <Label>Destination Folder</Label>
+                <TextBox Text="{Binding Path=DestinationFolder}" />
+            </StackPanel>
+        </Border>
+        <StackPanel Orientation="Horizontal" Grid.Row="2">
+            <Button
+                Padding="5"
+                Margin="5"
+                Command="{Binding Path=ActionCommand}"
+                CommandParameter="{x:Static viewAction:MainViewAction.Install}">
+                Install Service
+            </Button>
+            <Button
+                Padding="5"
+                Margin="5"
+                Command="{Binding Path=ActionCommand}"
+                CommandParameter="{x:Static viewAction:MainViewAction.Delete}">
+                Delete Service
+            </Button>
+            <Button
+                Padding="5"
+                Margin="5"
+                Command="{Binding Path=ActionCommand}"
+                CommandParameter="{x:Static viewAction:MainViewAction.Start}">
+                Start Service
+            </Button>
+            <Button
+                Padding="5"
+                Margin="5"
+                Command="{Binding Path=ActionCommand}"
+                CommandParameter="{x:Static viewAction:MainViewAction.Stop}">
+                Stop Service
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>
