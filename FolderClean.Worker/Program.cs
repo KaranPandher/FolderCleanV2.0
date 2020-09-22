@@ -12,7 +12,7 @@ namespace FolderClean.Worker
         {
             CreateHostBuilder(args)
                 .Build()
-                .Run();
+                .RunAsync();
 
         }
 
