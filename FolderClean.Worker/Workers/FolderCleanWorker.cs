@@ -87,8 +87,8 @@ namespace FolderClean.Worker.Workers
                 _logger.LogError(e.Message + "\n" + e.InnerException?.Message);
             }
 
-            Console.WriteLine("Press enter to exit");
-            Console.ReadLine();
+           // Console.WriteLine("Press enter to exit");
+            // Console.ReadLine();
 
 
         }
