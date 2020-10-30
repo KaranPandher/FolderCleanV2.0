@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace FolderClean.Application.Core
 {
@@ -33,17 +34,17 @@ namespace FolderClean.Application.Core
 
                     { */
 
-                        List<string> filesTemp = Directory.EnumerateFiles(directory1).ToList();
-                        foreach (var file in filesTemp)
+                    List<string> filesTemp = Directory.EnumerateFiles(directory1).ToList();
+                    foreach (var file in filesTemp)
+                    {
+                        var fileInfo = new FileInfo(file);
+                        if (fileInfo.Name.Contains("info"))
                         {
-                            var fileInfo = new FileInfo(file);
-                            if (fileInfo.Name.Contains("info"))
-                            {
-                                validFiles.Add(file);
-                            }
+                            validFiles.Add(file);
                         }
-                   /* } */
-                
+                    }
+                    /* } */
+
                 }
             }
             return validFiles;
@@ -55,7 +56,7 @@ namespace FolderClean.Application.Core
         /// <param name="days">No of Days Older</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static (bool,string) IsBatchProcessedAndDateOlder(string file, int days)
+        public static (bool, string, string) IsBatchProcessedAndDateOlder(string file, int days)
         {
             if (days <= 0)
             {
@@ -63,16 +64,17 @@ namespace FolderClean.Application.Core
             }
             string[] batchStates = new[]
             {
-                "Export Complete", 
+                "Export Complete",
                 "PROCESSED",
                 "Export Successful"
             };
             if (!File.Exists(file))
             {
-                return(false,"");
+                return (false, "", "");
             }
 
             string projectName = "";
+            string batchNo = "";
             bool isBatchStateProcessed = false;
             bool isBatchEndDateOld = false;
             bool isBatchStartDateOld = false;
@@ -121,9 +123,13 @@ namespace FolderClean.Application.Core
             if (!string.IsNullOrWhiteSpace(batchLocationLine))
             {
                 //batch.Location = \\sbfs01\images\Renal\ACP\Source\Renal- UAT\Renal- UATBatch000000001
-                projectName = batchLocationLine.Split('\\')[^2];
+                var splitLocation = batchLocationLine.Split('\\', StringSplitOptions.RemoveEmptyEntries).ToList();
+                var indexOfImage = splitLocation.IndexOf("images");
+                projectName = splitLocation[indexOfImage + 1];
+                var fullBatchName = splitLocation.Last();
+                batchNo = fullBatchName.Substring(fullBatchName.IndexOf("Batch", StringComparison.Ordinal), "Batch000000001".Length);
             }
-            return (isBatchEndDateOld && isBatchStateProcessed && isBatchStartDateOld, projectName);
+            return (isBatchEndDateOld && isBatchStateProcessed && isBatchStartDateOld, projectName, batchNo);
         }
 
         /// <summary>
@@ -132,10 +138,13 @@ namespace FolderClean.Application.Core
         /// <param name="file">Source File</param>
         /// <param name="destinationFolder">Destination folder</param>
         /// <param name="projectName">Project Name</param>
-        public static void MoveFolder(string file, string destinationFolder, string projectName)
+        public static (string, string) MoveFolder(string file, string destinationFolder, string projectName)
         {
+            string source = "";
+            string destination = "";
+
             // Check if file exists
-            if(File.Exists(file))
+            if (File.Exists(file))
             {
                 // Check file Info
                 var fileInfo = new FileInfo(file);
@@ -153,31 +162,34 @@ namespace FolderClean.Application.Core
                     {
                         Directory.CreateDirectory(destinationFolder);
                     }
+                    source = folderPath;
+                    destination = Path.Combine(destinationFolder, folderName);
                     // Move Folder to Destination Folder
                     // Copy Directory and Paste to Destination Folder
-                    CopyFolder(folderPath,Path.Combine(destinationFolder, folderName));
+                    CopyFolder(source, destination);
                     //Delete Folder
-                    Directory.Delete(folderPath,true);
+                    Directory.Delete(folderPath, true);
                 }
             }
+            return (source, destination);
         }
-        public static void CopyFolder(string sourceFolder, string destFolder )
+        public static void CopyFolder(string sourceFolder, string destFolder)
         {
-            if (!Directory.Exists( destFolder ))
-                Directory.CreateDirectory( destFolder );
-            string[] files = Directory.GetFiles( sourceFolder );
+            if (!Directory.Exists(destFolder))
+                Directory.CreateDirectory(destFolder);
+            string[] files = Directory.GetFiles(sourceFolder);
             foreach (string file in files)
             {
-                string name = Path.GetFileName( file );
-                string dest = Path.Combine( destFolder, name );
+                string name = Path.GetFileName(file);
+                string dest = Path.Combine(destFolder, name);
                 File.Copy(file, dest, true);
             }
-            string[] folders = Directory.GetDirectories( sourceFolder );
+            string[] folders = Directory.GetDirectories(sourceFolder);
             foreach (string folder in folders)
             {
-                string name = Path.GetFileName( folder );
-                string dest = Path.Combine( destFolder, name );
-                CopyFolder( folder, dest );
+                string name = Path.GetFileName(folder);
+                string dest = Path.Combine(destFolder, name);
+                CopyFolder(folder, dest);
             }
         }
     }
